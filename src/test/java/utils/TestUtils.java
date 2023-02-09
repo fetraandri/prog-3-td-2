@@ -102,3 +102,16 @@ public class TestUtils {
         assertEquals(message, exception.getMessage());
     }
 }
+
+public static void assertThrowsApiException(String expectedBody,  MockHttpServletResponse executable) throws Exception{
+        MockHttpServletResponse response = executable;
+        RestException exception = objectMapper.readValue(
+                response.getContentAsString(), RestException.class);
+        try{
+            if (response.getStatus()!=200 && response.getStatus()!=201){
+                throw new ApiException(response.getStatus(),exception.getMessage());
+            };
+        }catch(ApiException e){
+            assertEquals(expectedBody, exception.getMessage());
+        }
+        }

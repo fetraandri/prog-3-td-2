@@ -44,6 +44,27 @@ class MatchIntegrationTest {
         assertEquals(HttpStatus.OK.value(), response.getStatus());
         assertEquals(expectedMatch2(), actual);
     }
+    
+   @Test
+    void add_goals_ok() throws Exception {
+        String matchId = "3";
+
+        MockHttpServletResponse response = mockMvc
+                .perform(post("/matches/"+matchId+"/goals")
+                        .content(objectMapper.writeValueAsString(List.of(scorer6() )))
+                        .contentType("application/json")
+                        .accept("application/json"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        Match actual = objectMapper.readValue(
+                response.getContentAsString(), Match.class);
+
+        assertEquals(HttpStatus.OK.value(), response.getStatus());
+        assertEquals(expectedMatch3(), actual);
+
+    }
 
     @Test
     void read_matches_ok() throws Exception {
@@ -59,6 +80,21 @@ class MatchIntegrationTest {
         //assertTrue(actual.contains(expectedMatch1()));
         //assertTrue(actual.contains(expectedMatch3()));
     }
+        @Test
+    void add_goals_of_goalkeeper_ko() throws Exception {
+        String matchId = "3";
+        String errorMessage = "400 BAD_REQUEST : Player#"+player6().getId()+" is a guardian so they cannot score.";
+            assertThrowsApiException(errorMessage,
+                   mockMvc.perform(post("/matches/"+matchId+"/goals")
+                           .content(objectMapper.writeValueAsString(List.of(
+                                   scorer6().toBuilder()
+                                   .player(player6().toBuilder()
+                                           .isGuardian(true)
+                                           .build())
+                                   .build() )))
+                           .contentType("application/json")).andExpect(status().isBadRequest())
+                           .andReturn()
+                           .getResponse());
 
     private static Match expectedMatch2() {
         return Match.builder()
